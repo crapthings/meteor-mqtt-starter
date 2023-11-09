@@ -1,6 +1,7 @@
 import { mqttPublish } from '/imports/mqtt'
 
 import Button from '../components/button'
+import List from '../components/list'
 
 export default function Home () {
   return (
@@ -10,6 +11,8 @@ export default function Home () {
       <div>
         <Button onClick={() => mqttPublish('/topic', 'test1')}>mqtt publish</Button>
       </div>
+
+      <List />
     </div>
   )
 }

@@ -1,24 +1,23 @@
-import { WebApp } from 'meteor/webapp'
 import { WebSocket } from 'ws'
 import { createServer } from 'aedes-server-factory'
 import Aedes from 'aedes'
+import { WebApp } from 'meteor/webapp'
 
-Meteor.startup(() => {
-  const aedes = Aedes()
-  const wsPath = '/mqtt'
+const aedes = Aedes()
+const wsPath = '/mqtt'
 
-  createServer(aedes, { ws: true })
+createServer(aedes, { ws: true })
 
-  const httpServer = WebApp.httpServer
+WebApp.httpServer.on('upgrade', (request, socket, head) => {
+  if (request.url === wsPath) {
+    const wsServer = new WebSocket.Server({ noServer: true })
 
-  httpServer.on('upgrade', (request, socket, head) => {
-    if (request.url === wsPath) {
-      const wsServer = new WebSocket.Server({ noServer: true })
-      wsServer.handleUpgrade(request, socket, head, (webSocket) => {
-        const stream = WebSocket.createWebSocketStream(webSocket)
-        stream._socket = webSocket._socket
-        aedes.handle(stream)
-      })
-    }
-  })
+    wsServer.handleUpgrade(request, socket, head, (webSocket) => {
+      const stream = WebSocket.createWebSocketStream(webSocket)
+
+      stream._socket = webSocket._socket
+
+      aedes.handle(stream)
+    })
+  }
 })
